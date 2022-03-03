@@ -1,6 +1,7 @@
 package tororo1066.man10rank.commands
 
 import org.bukkit.command.CommandSender
+import tororo1066.man10rank.ConvertFromAutoRank
 import tororo1066.man10rank.Man10Rank
 import tororo1066.man10rank.Man10Rank.Companion.withPrefix
 import tororo1066.tororopluginapi.sCommand.*
@@ -9,6 +10,7 @@ import java.util.function.Consumer
 class Man10RankCommand : SCommand("mr") {
 
     init {
+        registerReportCommand(Man10Rank.plugin,"mr.user","mr.op")
         setCommandNoFoundEvent { showHelp(it.sender) }
 
         addCommand(SCommandObject().addNeedPermission("mr.user").addArg(SCommandArg().addAllowString("check")).setExecutor(
@@ -27,6 +29,11 @@ class Man10RankCommand : SCommand("mr") {
                     }
                 }
         ))
+
+        addCommand(SCommandObject().addNeedPermission("mr.op")
+                .addArg(SCommandArg().addAllowString("convert")).setExecutor(
+                        Consumer<SCommandData> { ConvertFromAutoRank.convert() }
+                ))
     }
 
     fun showHelp(sender: CommandSender){

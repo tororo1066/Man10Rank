@@ -10,6 +10,7 @@ import tororo1066.man10rank.listeners.PlayerJoinListener
 import tororo1066.man10rank.listeners.PlayerQuitListener
 import tororo1066.man10rank.pathRequest.AbstractPathRequest
 import tororo1066.man10rank.pathRequest.requests.BlockBreakRequest
+import tororo1066.man10rank.pathRequest.requests.EconomyRequest
 import tororo1066.man10rank.pathRequest.requests.PermissionRequest
 import tororo1066.man10rank.pathRequest.requests.PlayTimeRequest
 import tororo1066.tororopluginapi.SMySQL
@@ -71,6 +72,7 @@ class Man10Rank : JavaPlugin() {
         add(PermissionRequest())
         add(PlayTimeRequest())
         add(BlockBreakRequest())
+        add(EconomyRequest())
     }
 
     fun add(request: AbstractPathRequest){

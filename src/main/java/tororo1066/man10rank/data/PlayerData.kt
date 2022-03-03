@@ -2,6 +2,7 @@ package tororo1066.man10rank.data
 
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
+import org.bukkit.OfflinePlayer
 import org.bukkit.Server
 import org.bukkit.entity.Player
 import tororo1066.man10rank.Man10Rank
@@ -29,15 +30,15 @@ class PlayerData {
             return list
         }
 
-        fun createData(p: Player): Boolean {
+        fun createData(p: OfflinePlayer): Boolean {
             if (Man10Rank.userData.containsKey(p.uniqueId))return false
             Man10Rank.mysql.asyncExecute("insert into user_data (name, uuid, nowRank, time) values ('${p.name}', '${p.uniqueId}', '${Man10Rank.parent.includeName}', 0)")
             val data = PlayerData()
             data.uuid = p.uniqueId
-            data.mcid = p.name
+            data.mcid = p.name.toString()
             data.nowRank = Man10Rank.parent
             Man10Rank.parent.onSuccess.forEach {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),it.replace("<player>",p.name))
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),it.replace("<player>",p.name.toString()))
             }
             for (child in Man10Rank.parent.children){
                 data.nextData.add(Man10Rank.rankList[child]?:continue)
