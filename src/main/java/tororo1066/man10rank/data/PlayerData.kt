@@ -5,6 +5,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Server
 import org.bukkit.entity.Player
 import tororo1066.man10rank.Man10Rank
+import tororo1066.man10rank.Man10Rank.Companion.withPrefix
 import java.util.UUID
 
 class PlayerData {
@@ -17,7 +18,7 @@ class PlayerData {
                 val data = PlayerData()
                 data.uuid = UUID.fromString(result.getString("uuid"))
                 data.mcid = result.getString("name")
-                data.loginTime = result.getInt("time").toLong()
+                data.loginTime = result.getLong("time")
                 data.nowRank = Man10Rank.rankList[result.getString("nowRank")]?:continue
                 val rank = Man10Rank.rankList[result.getString("nowRank")]!!
                 for (child in rank.children){
@@ -55,24 +56,43 @@ class PlayerData {
 
     var loginTime: Long = 0
 
+    fun getLoginString(): String {
+        var minutes = loginTime.toInt()
+        var hours = 0
+        var days = 0
+        if (minutes >= 60){
+            hours = (minutes / 60)
+            minutes -= hours * 60
+        }
+        if (hours >= 24){
+            days = (hours / 24)
+            hours -= days * 24
+        }
+
+        return "${if (days == 0) "" else "${days}日"}${if (hours == 0) "" else "${hours}時間"}${if (minutes == 0) "" else "${minutes}分"}"
+    }
+
     fun showNextRank(){
         val p = Bukkit.getPlayer(uuid)?:return
         if (p.name != mcid){
             Man10Rank.mysql.asyncExecute("update user_data set name = '${p.name}' where uuid = '${uuid}'")
         }
+
+        p.sendMessage(withPrefix("§e§lログイン時間：§b${getLoginString()}"))
+
         if (nextData.isEmpty()){
-            p.sendMessage("§4次のランクはありません")
+            p.sendMessage(withPrefix("§4次のランクはありません"))
             return
         }
 
         for (data in nextData){
-            p.sendMessage(data.pathName)
+            p.sendMessage(withPrefix(data.pathName))
             for (i in data.paths.indices){
                 val isSuccess = data.paths[i].isSuccess(p)
                 if (isSuccess){
-                    p.sendMessage("§a${data.pathMessages[i]}")
+                    p.sendMessage(withPrefix("§a${data.pathMessages[i]}"))
                 }else{
-                    p.sendMessage("§c${data.pathMessages[i]}")
+                    p.sendMessage(withPrefix("§c${data.pathMessages[i]}"))
                 }
             }
 
@@ -95,7 +115,7 @@ class PlayerData {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(),it.replace("<player>",mcid))
         }
 
-        Bukkit.broadcast(Component.text("§d${mcid}が${rankData.name}にランクアップしました！"),Server.BROADCAST_CHANNEL_USERS)
+        Bukkit.broadcast(Component.text(withPrefix("§f§l${mcid}§dが§r${rankData.name}§dにランクアップしました！")),Server.BROADCAST_CHANNEL_USERS)
 
     }
 

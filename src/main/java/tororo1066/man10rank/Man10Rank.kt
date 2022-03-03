@@ -1,38 +1,50 @@
 package tororo1066.man10rank
 
+import me.staartvin.statz.Statz
 import org.bukkit.Bukkit
-import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
-import org.reflections.Reflections
-import org.reflections.scanners.SubTypesScanner
 import tororo1066.man10rank.commands.Man10RankCommand
 import tororo1066.man10rank.data.PlayerData
 import tororo1066.man10rank.data.RankData
 import tororo1066.man10rank.listeners.PlayerJoinListener
 import tororo1066.man10rank.listeners.PlayerQuitListener
 import tororo1066.man10rank.pathRequest.AbstractPathRequest
+import tororo1066.man10rank.pathRequest.requests.BlockBreakRequest
 import tororo1066.man10rank.pathRequest.requests.PermissionRequest
 import tororo1066.man10rank.pathRequest.requests.PlayTimeRequest
 import tororo1066.tororopluginapi.SMySQL
+import tororo1066.tororopluginapi.otherPlugin.SVault
 import java.io.File
-import java.util.UUID
-import java.util.stream.Collectors
+import java.util.*
 
 class Man10Rank : JavaPlugin() {
 
     companion object{
         lateinit var mysql : SMySQL
         lateinit var plugin: Man10Rank
+        lateinit var vault: SVault
+        var statz: Statz? = null
         val requestList = HashMap<String,AbstractPathRequest>()
         lateinit var parent: RankData
         val rankList = HashMap<String,RankData>()
         val userData = HashMap<UUID,PlayerData>()
+        const val prefix = "§b§l[§d§lMan10§6§lRank§b§l]§r "
+        fun withPrefix(s : String): String {
+            return prefix + s
+        }
     }
 
     override fun onEnable() {
         saveDefaultConfig()
         plugin = this
         mysql = SMySQL(this)
+        vault = SVault()
+        val statz = Bukkit.getPluginManager().getPlugin("Statz")
+        if (statz == null || !statz.isEnabled){
+            logger.warning("Statzが導入されていません")
+        } else {
+            Man10Rank.statz = statz as Statz
+        }
         registerRequests()
         val directory = File(dataFolder.path + "/ranks")
         if (!directory.exists()) directory.mkdir()
@@ -58,6 +70,7 @@ class Man10Rank : JavaPlugin() {
     fun registerRequests(){
         add(PermissionRequest())
         add(PlayTimeRequest())
+        add(BlockBreakRequest())
     }
 
     fun add(request: AbstractPathRequest){

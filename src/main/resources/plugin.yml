@@ -3,5 +3,11 @@ version: '${version}'
 main: tororo1066.man10rank.Man10Rank
 api-version: 1.17
 
+softdepend:
+  - Statz
+
+depend:
+  - Vault
+
 commands:
   mr:

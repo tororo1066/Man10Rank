@@ -11,7 +11,7 @@ class PlayerQuitListener : SEventInterface<PlayerQuitEvent>(Man10Rank.plugin,Pla
         if (!PlayTimeCounter.countPlayers.containsKey(e.player.uniqueId))return
         val data = PlayTimeCounter.countPlayers[e.player.uniqueId]!!
         Bukkit.getScheduler().cancelTask(data.taskId)
-        Man10Rank.mysql.asyncExecute("update user_data set time = ${data.time} where uuid = ''${data.uuid}")
+        Man10Rank.mysql.asyncExecute("update user_data set time = ${data.time} where uuid = '${data.uuid}'")
         PlayTimeCounter.countPlayers.remove(e.player.uniqueId)
     }
 }

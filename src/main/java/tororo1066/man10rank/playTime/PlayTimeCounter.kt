@@ -4,7 +4,7 @@ import org.bukkit.Bukkit
 import tororo1066.man10rank.Man10Rank
 import java.util.UUID
 
-class PlayTimeCounter(val uuid: UUID) {
+class PlayTimeCounter(private val uuid: UUID) {
 
     class CountData {
         lateinit var uuid: UUID
@@ -32,7 +32,7 @@ class PlayTimeCounter(val uuid: UUID) {
         data.taskId = Bukkit.getScheduler().runTaskTimer(Man10Rank.plugin, Runnable {
             data.time += 5
             user.loginTime += 5
-        },0,6000).taskId
+        },6000,6000).taskId
 
         countPlayers[uuid] = data
     }

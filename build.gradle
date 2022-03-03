@@ -23,8 +23,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compileOnly 'io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile 'org.reflections:reflections:0.9.12'
-    compile 'com.github.tororo1066:TororoPluginAPI:498e6f525a'
+    compile 'com.github.tororo1066:TororoPluginAPI:1924c7d93f'
     compileOnly fileTree(dir: 'libs', include: '*.jar')
 }
 
