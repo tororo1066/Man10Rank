@@ -1,0 +1,10 @@
+name: "BRONZE"
+pathName: "BRONZEまでの道"
+children:
+  - iron
+paths:
+  permission:
+    perm: "mr.user"
+
+onSuccess:
+  - say <player> aaa

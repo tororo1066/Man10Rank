@@ -1,0 +1,7 @@
+name: Man10Rank
+version: '${version}'
+main: tororo1066.man10rank.Man10Rank
+api-version: 1.17
+
+commands:
+  mr:

@@ -1,0 +1,17 @@
+name: "§7§lIRON"
+pathName: "§e§lIRONまでの道"
+parent: bronze
+children:
+  - gold
+paths:
+  permission:
+    perm: "mr.op"
+  playtime:
+    time: 5
+
+pathMessages:
+  - test test
+  - 5分ログインする
+
+onSuccess:
+  - say <player> aaa
