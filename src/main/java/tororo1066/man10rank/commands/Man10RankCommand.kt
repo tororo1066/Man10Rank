@@ -38,8 +38,13 @@ class Man10RankCommand : SCommand("mr") {
 
     fun showHelp(sender: CommandSender){
         sender.sendMessage("§6====================§d§lMan10Rank§6====================")
-        sender.sendMessage("§b/mr check §a次のランクの条件を確認します")
-        sender.sendMessage("§b/mr top <ページ> §aログイン時間ランキングを表示します")
-        sender.sendMessage("§6====================§d§lMan10Rank§6====================")
+        if (sender.hasPermission("mr.user")){
+            sender.sendMessage("§b/mr check §a次のランクの条件を確認します")
+            sender.sendMessage("§b/mr top <ページ> §aログイン時間ランキングを表示します")
+        }
+        if (sender.hasPermission("mr.op")){
+            sender.sendMessage("§b/mr convert §aAutoRankからログイン時間を引き継ぎます")
+        }
+        sender.sendMessage("§6====================§d§lMan10Rank§6==Author:tororo_1066")
     }
 }

@@ -1,6 +1,8 @@
 package tororo1066.man10rank
 
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
+import org.bukkit.Server
 import org.bukkit.configuration.file.YamlConfiguration
 import tororo1066.man10rank.data.PlayerData
 import tororo1066.man10rank.playTime.PlayTimeCounter
@@ -11,7 +13,8 @@ class ConvertFromAutoRank {
 
     companion object{
         fun convert(): Boolean {
-            val file = File((Bukkit.getPluginManager().getPlugin("AutoRank")?:return false).dataFolder.path + "/data/Total_time.yml")
+            val ar = Bukkit.getPluginManager().getPlugin("AutoRank")?:return false
+            val file = File(ar.dataFolder.path + "/data/Total_time.yml")
             if (!file.exists())return false
 
             Bukkit.getLogger().warning("[Man10Rank] ラグが発生する恐れがあります！")
@@ -34,6 +37,21 @@ class ConvertFromAutoRank {
                     PlayTimeCounter.countPlayers[uuid]!!.time = data.toLong()
                 }
             }
+
+            val file2 = File(ar.dataFolder.path + "/playerdata/PlayerData.yml")
+            val playerDataYml = YamlConfiguration.loadConfiguration(file2)
+
+            for (uuidString in playerDataYml.getKeys(false)){
+                val completed = playerDataYml.getConfigurationSection("${uuidString}.completed paths")?:continue
+                for (complete in completed.getKeys(false)){
+                    val userData = Man10Rank.userData[UUID.fromString(uuidString)]?:continue
+                    val rankData = Man10Rank.rankList[complete]?:continue
+                    userData.rankUp(rankData)
+                }
+            }
+
+
+            Bukkit.broadcast(Component.text("${Man10Rank.prefix} §aarからの移行が完了しました"), Server.BROADCAST_CHANNEL_ADMINISTRATIVE)
             Bukkit.getLogger().info("[Man10Rank] §a完了しました")
             return true
         }
