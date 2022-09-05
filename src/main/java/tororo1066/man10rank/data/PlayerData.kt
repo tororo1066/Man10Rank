@@ -7,14 +7,16 @@ import org.bukkit.Server
 import org.bukkit.entity.Player
 import tororo1066.man10rank.Man10Rank
 import tororo1066.man10rank.Man10Rank.Companion.withPrefix
+import tororo1066.tororopluginapi.utils.DateType
+import tororo1066.tororopluginapi.utils.toJPNDateStr
+import tororo1066.tororopluginapi.utils.toPlayer
 import java.util.UUID
 
 class PlayerData {
 
     companion object{
-        fun fromDB(): ArrayList<PlayerData> {
-            val rs = Man10Rank.mysql.asyncQuery("select * from user_data")
-            val list = ArrayList<PlayerData>()
+        fun fromDB(uuid: UUID): PlayerData? {
+            val rs = Man10Rank.mysql.asyncQuery("select * from user_data where uuid = '${uuid}'")
             for (result in rs){
                 val data = PlayerData()
                 data.uuid = UUID.fromString(result.getString("uuid"))
@@ -25,14 +27,14 @@ class PlayerData {
                 for (child in rank.children){
                     data.nextData.add(Man10Rank.rankList[child]?:continue)
                 }
-                list.add(data)
+                return data
             }
-            return list
+            return null
         }
 
-        fun createData(p: OfflinePlayer): Boolean {
-            if (Man10Rank.userData.containsKey(p.uniqueId))return false
-            Man10Rank.mysql.asyncExecute("insert into user_data (name, uuid, nowRank, time) values ('${p.name}', '${p.uniqueId}', '${Man10Rank.parent.includeName}', 0)")
+        fun createData(p: OfflinePlayer): PlayerData {
+            if (Man10Rank.userData.containsKey(p.uniqueId))return Man10Rank.userData[p.uniqueId]!!
+            if (!Man10Rank.mysql.asyncExecute("insert into user_data (name, uuid, nowRank, time) values ('${p.name}', '${p.uniqueId}', '${Man10Rank.parent.includeName}', 0)"))throw NullPointerException("Please Connect DB.")
             val data = PlayerData()
             data.uuid = p.uniqueId
             data.mcid = p.name.toString()
@@ -43,8 +45,7 @@ class PlayerData {
             for (child in Man10Rank.parent.children){
                 data.nextData.add(Man10Rank.rankList[child]?:continue)
             }
-            Man10Rank.userData[p.uniqueId] = data
-            return true
+            return data
         }
     }
 
@@ -57,29 +58,13 @@ class PlayerData {
 
     var loginTime: Long = 0
 
-    fun getLoginString(): String {
-        var minutes = loginTime.toInt()
-        var hours = 0
-        var days = 0
-        if (minutes >= 60){
-            hours = (minutes / 60)
-            minutes -= hours * 60
-        }
-        if (hours >= 24){
-            days = (hours / 24)
-            hours -= days * 24
-        }
-
-        return "${if (days == 0) "" else "${days}日"}${if (hours == 0) "" else "${hours}時間"}${if (minutes == 0) "" else "${minutes}分"}"
-    }
-
     fun showNextRank(){
         val p = Bukkit.getPlayer(uuid)?:return
         if (p.name != mcid){
             Man10Rank.mysql.asyncExecute("update user_data set name = '${p.name}' where uuid = '${uuid}'")
         }
 
-        p.sendMessage(withPrefix("§e§lログイン時間：§b${getLoginString()}"))
+        p.sendMessage(withPrefix("§e§lログイン時間：§b${loginTime.toJPNDateStr(DateType.MINUTE,DateType.YEAR)}"))
 
         if (nextData.isEmpty()){
             p.sendMessage(withPrefix("§4次のランクはありません"))
@@ -104,7 +89,17 @@ class PlayerData {
         }
     }
 
-    fun rankUp(rankData: RankData){
+    fun checkRankUp(){
+        val p = uuid.toPlayer()?:return
+        for (data in nextData){
+            if (data.isSuccess(p)){
+                rankUp(data)
+                return
+            }
+        }
+    }
+
+    fun rankUp(rankData: RankData, broadcast: Boolean){
         nowRank = rankData
         Man10Rank.mysql.asyncExecute("update user_data set nowRank = '${rankData.includeName}' where uuid = '${uuid}'")
         nextData.clear()
@@ -116,8 +111,13 @@ class PlayerData {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(),it.replace("<player>",mcid))
         }
 
-        Bukkit.broadcast(Component.text(withPrefix("§f§l${mcid}§dが§r${rankData.name}§dにランクアップしました！")),Server.BROADCAST_CHANNEL_USERS)
+        if (broadcast){
+            Bukkit.broadcast(Component.text(withPrefix("§f§l${mcid}§dが§r${rankData.name}§dにランクアップしました！")),Server.BROADCAST_CHANNEL_USERS)
+        }
+    }
 
+    fun rankUp(rankData: RankData){
+        rankUp(rankData,true)
     }
 
 

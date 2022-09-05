@@ -13,6 +13,7 @@ import tororo1066.man10rank.pathRequest.requests.BlockBreakRequest
 import tororo1066.man10rank.pathRequest.requests.EconomyRequest
 import tororo1066.man10rank.pathRequest.requests.PermissionRequest
 import tororo1066.man10rank.pathRequest.requests.PlayTimeRequest
+import tororo1066.man10rank.playTime.PlayTimeCounter
 import tororo1066.tororopluginapi.SMySQL
 import tororo1066.tororopluginapi.otherPlugin.SVault
 import java.io.File
@@ -40,6 +41,7 @@ class Man10Rank : JavaPlugin() {
         plugin = this
         mysql = SMySQL(this)
         vault = SVault()
+        createTable()
         val statz = Bukkit.getPluginManager().getPlugin("Statz")
         if (statz == null || !statz.isEnabled){
             logger.warning("Statzが導入されていません")
@@ -59,13 +61,11 @@ class Man10Rank : JavaPlugin() {
                 rankList[file.nameWithoutExtension] = data
             }
         }
-
-        PlayerData.fromDB().forEach {
-            userData[it.uuid] = it
-        }
         Man10RankCommand()
         PlayerJoinListener()
         PlayerQuitListener()
+
+        PlayTimeCounter()
     }
 
     fun registerRequests(){
@@ -77,5 +77,16 @@ class Man10Rank : JavaPlugin() {
 
     fun add(request: AbstractPathRequest){
         requestList[request.configString] = request
+    }
+
+    private fun createTable(){
+        mysql.execute("CREATE TABLE IF NOT EXISTS `user_data` (\n" +
+                "    `id` INT(10) NOT NULL AUTO_INCREMENT,\n" +
+                "    `name` VARCHAR(16) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',\n" +
+                "    `uuid` VARCHAR(36) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',\n" +
+                "    `nowRank` TEXT NOT NULL COLLATE 'utf8mb4_0900_ai_ci',\n" +
+                "    `time` BIGINT(19) NULL DEFAULT NULL,\n" +
+                "    PRIMARY KEY (`id`) USING BTREE\n" +
+                ");")
     }
 }

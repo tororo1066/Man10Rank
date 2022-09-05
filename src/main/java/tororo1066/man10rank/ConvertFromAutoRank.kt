@@ -12,7 +12,7 @@ import java.util.UUID
 class ConvertFromAutoRank {
 
     companion object{
-        fun convert(): Boolean {
+        fun convert(range: IntRange): Boolean {
             val ar = Bukkit.getPluginManager().getPlugin("AutoRank")?:return false
             val file = File(ar.dataFolder.path + "/data/Total_time.yml")
             if (!file.exists())return false
@@ -22,26 +22,29 @@ class ConvertFromAutoRank {
             val yaml = YamlConfiguration.loadConfiguration(file)
 
             val mysql = Man10Rank.mysql
-            for (uuidString in yaml.getKeys(false)){
+            Bukkit.broadcast(Component.text(yaml.getKeys(false).size),Server.BROADCAST_CHANNEL_ADMINISTRATIVE)
+            val filter = yaml.getKeys(false).sortedBy { it }.subList(range.first,range.last)
+            for (uuidString in filter){
                 val data = yaml.getInt(uuidString)
                 val uuid = UUID.fromString(uuidString)
                 if (Man10Rank.userData.containsKey(uuid)){
                     Man10Rank.userData[uuid]!!.loginTime = data.toLong()
                     mysql.asyncExecute("update user_data set time = $data where uuid = '${uuid}'")
                 } else {
-                    PlayerData.createData(Bukkit.getOfflinePlayer(uuid))
+                    Man10Rank.userData[uuid] = PlayerData.createData(Bukkit.getOfflinePlayer(uuid))
                     Man10Rank.userData[uuid]!!.loginTime = data.toLong()
                     mysql.asyncExecute("update user_data set time = $data where uuid = '${uuid}'")
                 }
-                if (PlayTimeCounter.countPlayers.containsKey(uuid)){
-                    PlayTimeCounter.countPlayers[uuid]!!.time = data.toLong()
+                if (Man10Rank.userData.containsKey(uuid)){
+                    Man10Rank.userData[uuid]!!.loginTime = data.toLong()
                 }
             }
 
             val file2 = File(ar.dataFolder.path + "/playerdata/PlayerData.yml")
             val playerDataYml = YamlConfiguration.loadConfiguration(file2)
+            val filter2 = playerDataYml.getKeys(false).filter { filter.contains(it) }
 
-            for (uuidString in playerDataYml.getKeys(false)){
+            for (uuidString in filter2){
                 val completed = playerDataYml.getConfigurationSection("${uuidString}.completed paths")?:continue
                 for (complete in completed.getKeys(false)){
                     val userData = Man10Rank.userData[UUID.fromString(uuidString)]?:continue

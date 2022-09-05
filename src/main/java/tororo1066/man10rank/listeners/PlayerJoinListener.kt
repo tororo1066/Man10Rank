@@ -8,9 +8,12 @@ import tororo1066.tororopluginapi.sEvent.SEventInterface
 
 class PlayerJoinListener : SEventInterface<PlayerJoinEvent>(Man10Rank.plugin,PlayerJoinEvent::class.java) {
     override fun executeEvent(e: PlayerJoinEvent) {
-        if (!Man10Rank.userData.containsKey(e.player.uniqueId)){
-            PlayerData.createData(e.player)
+        var data = PlayerData.fromDB(e.player.uniqueId)
+        if (data == null){
+            data = PlayerData.createData(e.player)
         }
-        PlayTimeCounter(e.player.uniqueId)
+
+        Man10Rank.userData[e.player.uniqueId] = data
+
     }
 }

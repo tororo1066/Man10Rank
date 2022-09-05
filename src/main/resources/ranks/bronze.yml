@@ -1,10 +1,7 @@
-name: "BRONZE"
-pathName: "BRONZEまでの道"
 children:
-  - iron
+  - bronze
 paths:
   permission:
-    perm: "mr.user"
-
+    perm: "aaa"
 onSuccess:
-  - say <player> aaa
+  - lp うんたらかんたら
